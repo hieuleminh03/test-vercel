@@ -59,7 +59,7 @@
     </div>
 
     <script>
-        const backendBase = 'http://localhost:3000';
+        const backendBase = window.location.origin;
 
         async function doSignup(username, email, password) {
             try {
@@ -103,22 +103,9 @@
             const result = await doSignup(username, email, password);
             if (result.success) {
                 window.location.href = 'web.html';
-                return;
+            } else {
+                messageDiv.textContent = result.message || 'Signup failed. Please try again.';
             }
-
-            // fallback to localStorage if backend not available
-            let accounts = JSON.parse(localStorage.getItem('accounts')) || [];
-            if (accounts.find(acc => acc.email === email)) {
-                messageDiv.textContent = 'Email already exists.';
-                return;
-            }
-
-            const newUser = { username, email, password, avatar: '/asset/image/Material/user.jpg' };
-            accounts.push(newUser);
-            localStorage.setItem('accounts', JSON.stringify(accounts));
-            localStorage.setItem('current_user', JSON.stringify(newUser));
-            messageDiv.textContent = '';
-            window.location.href = 'web.html';
         });
 
         document.getElementById('signin-link-from-signup').addEventListener('click', function(e) {

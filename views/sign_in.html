@@ -74,8 +74,8 @@
             card.style.transform = 'rotateX(0) rotateY(0) scale(1)';
         });
 
-        // Sign-in logic: try backend, fallback to localStorage
-        const backendBase = 'http://localhost:3000';
+        // Sign-in logic: use current domain
+        const backendBase = window.location.origin;
 
         async function doSignin(email, password) {
             try {
@@ -118,14 +118,6 @@
                     };
                 }, 500);
             } else {
-                // fallback: check local accounts in localStorage
-                const accounts = JSON.parse(localStorage.getItem('accounts')) || [];
-                const user = accounts.find(acc => acc.email === email);
-                if (user && user.password === password) {
-                    localStorage.setItem('current_user', JSON.stringify(user));
-                    window.location.href = 'web.html';
-                    return;
-                }
                 messageDiv.textContent = result.message || 'Invalid email or password';
             }
         });

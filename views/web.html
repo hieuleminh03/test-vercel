@@ -154,17 +154,42 @@
                 document.body.style.opacity = "1";
             }, 1400);
 
-            const currentUser = JSON.parse(localStorage.getItem('current_user'));
             const userStatusContainer = document.getElementById('user-status-container');
             const avatarLink = document.getElementById('avatar-link');
             const avatarImg = document.getElementById('avatar-img');
 
-            if (currentUser) {
-                avatarImg.src = currentUser.avatar || '../asset/image/Material/user.jpg';
-                avatarLink.href = 'profile.html';
-                userStatusContainer.innerHTML = logoutButtonHtml;
+            // Check if user is logged in via token
+            const token = localStorage.getItem('auth_token');
+            if (token) {
+                // Fetch user profile from backend
+                fetch('/api/users/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+                    throw new Error('Token invalid');
+                })
+                .then(user => {
+                    avatarImg.src = user.avatar || '/asset/image/Material/user.jpg';
+                    avatarLink.href = 'profile.html';
+                    userStatusContainer.innerHTML = logoutButtonHtml;
+                })
+                .catch(error => {
+                    // Token invalid, show login
+                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem('current_user');
+                    showLoginInterface();
+                });
             } else {
-                avatarImg.src = '../asset/image/Material/user.jpg';
+                showLoginInterface();
+            }
+
+            function showLoginInterface() {
+                avatarImg.src = '/asset/image/Material/user.jpg';
                 avatarLink.href = '#';
                 userStatusContainer.innerHTML = `
                     <a href="#" class="sign-btn" data-bs-toggle="modal" data-bs-target="#signInModal">Login</a>
@@ -172,31 +197,44 @@
                 `;
             }
 
-            const logoutButton = document.getElementById('logout-btn');
-            if (logoutButton) {
-                logoutButton.addEventListener('click', function (e) {
+            // Handle logout button (will be created dynamically)
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.id === 'logout-btn') {
                     e.preventDefault();
                     localStorage.removeItem('current_user');
+                    localStorage.removeItem('auth_token');
                     window.location.reload();
-                });
-            }
+                }
+            });
 
             // Sign-in logic
-            document.getElementById('signInForm').addEventListener('submit', function(e) {
+            document.getElementById('signInForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const email = document.getElementById('email').value.trim();
                 const password = document.getElementById('password').value;
                 const messageDiv = document.getElementById('login-message');
-                
-                const accounts = JSON.parse(localStorage.getItem('accounts')) || [];
-                const user = accounts.find(acc => acc.email === email && acc.password === password);
+                messageDiv.textContent = '';
 
-                if (user) {
-                    localStorage.setItem('current_user', JSON.stringify(user));
-                    messageDiv.textContent = '';
-                    window.location.reload();
-                } else {
-                    messageDiv.textContent = 'Invalid email or password.';
+                try {
+                    const response = await fetch('/api/auth/signin', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ email, password })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        localStorage.setItem('current_user', JSON.stringify(data.user));
+                        localStorage.setItem('auth_token', data.token);
+                        window.location.reload();
+                    } else {
+                        messageDiv.textContent = data.error || 'Invalid email or password.';
+                    }
+                } catch (error) {
+                    messageDiv.textContent = 'Network error. Please try again.';
                 }
             });
 
