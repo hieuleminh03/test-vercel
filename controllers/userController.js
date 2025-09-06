@@ -5,9 +5,20 @@ const fs = require('fs');
 
 // Setup multer for avatar uploads
 const uploadsDir = path.join(__dirname, '..', 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
+
+// Ensure uploads directory exists
+function ensureUploadsDir() {
+    if (!fs.existsSync(uploadsDir)) {
+        try {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+        } catch (error) {
+            console.error('Error creating uploads directory:', error);
+        }
+    }
 }
+
+// Create directory on module load
+ensureUploadsDir();
 
 const storage = multer.diskStorage({
     destination: uploadsDir,
@@ -23,6 +34,9 @@ const userController = {
 
     async uploadAvatar(req, res) {
         try {
+            // Ensure uploads directory exists before processing
+            ensureUploadsDir();
+            
             if (!req.file) {
                 return res.status(400).json({ error: 'No file uploaded' });
             }
