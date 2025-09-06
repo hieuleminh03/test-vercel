@@ -41,6 +41,36 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'web.html'));
 });
 
+// Original file names for compatibility
+app.get('/web.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'web.html'));
+});
+
+app.get('/sign_in.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'sign_in.html'));
+});
+
+app.get('/sign_up.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'sign_up.html'));
+});
+
+app.get('/profile.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'profile.html'));
+});
+
+app.get('/Dethi.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'Dethi.html'));
+});
+
+app.get('/Sohoc.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'Sohoc.html'));
+});
+
+app.get('/Pt.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'Pt.html'));
+});
+
+// Clean URL routes (optional)
 app.get('/signin', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'sign_in.html'));
 });
